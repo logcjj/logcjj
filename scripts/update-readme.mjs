@@ -118,6 +118,21 @@ function updateHeartbeat(readme) {
   return `${stamp}\n${readme}`;
 }
 
+function updateTokscaleCacheKey(readme) {
+  const cacheKey = isoDate();
+  const pattern = /https:\/\/tokscale\.ai\/api\/embed\/logcjj\/svg\?[^"]+/;
+
+  if (!pattern.test(readme)) {
+    throw new Error("Could not find the Tokscale embed URL in README.md");
+  }
+
+  return readme.replace(pattern, (match) => {
+    const url = new URL(match);
+    url.searchParams.set("cache", cacheKey);
+    return url.toString();
+  });
+}
+
 function updateUsage(readme) {
   const section = buildUsageSection();
   const pattern = /## AI Usage\n\n\| Window \| Tokens \| Cost \| Messages \|\n\| --- \| ---: \| ---: \| ---: \|\n(?:\| .+\n)+\n<p align="center">\n  <sub>.*?<\/sub>\n<\/p>/s;
@@ -131,6 +146,7 @@ function updateUsage(readme) {
 
 let readme = readFileSync(readmePath, "utf8");
 readme = updateHeartbeat(readme);
+readme = updateTokscaleCacheKey(readme);
 
 if (!heartbeatOnly) {
   readme = updateUsage(readme);
