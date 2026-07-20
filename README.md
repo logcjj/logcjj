@@ -1,3 +1,4 @@
+<!-- profile-auto-refresh: 2026-07-20T05:50:32.417Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated from local cc-switch data.
@@ -62,11 +63,11 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Tokens | Cost | Messages |
 | --- | ---: | ---: | ---: |
-| Today | 3,684,957,052 | $0.00 | 12,375 |
-| Last 7 days | 11,775,677,568 | $1.76 | 40,165 |
-| Last 30 days | 31,554,162,717 | $2,599.64 | 110,058 |
-| All time | 114,520,011,575 | $16,983.63 | 395,421 |
+| Today | 580,101,093 | $520.83 | 3,699 |
+| Last 7 days | 1,054,981,051 | $931.57 | 6,864 |
+| Last 30 days | 31,362,826,973 | $6,562.94 | 125,458 |
+| All time | 120,394,902,472 | $22,354.59 | 434,505 |
 
 <p align="center">
-  <sub>Updated Jul 13, 2026. Aggregated from cc-switch; live card served by Tokscale.</sub>
+  <sub>Usage snapshot generated Jul 20, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
 </p>
