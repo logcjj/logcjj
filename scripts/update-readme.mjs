@@ -119,7 +119,7 @@ function updateHeartbeat(readme) {
 }
 
 function updateTokscaleCacheKey(readme) {
-  const cacheKey = isoDate();
+  const cacheKey = new Date().toISOString();
   const pattern = /https:\/\/tokscale\.ai\/api\/embed\/logcjj\/svg\?[^"]+/;
 
   if (!pattern.test(readme)) {
