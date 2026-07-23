@@ -1,4 +1,4 @@
-<!-- profile-auto-refresh: 2026-07-23T08:30:09.715Z -->
+<!-- profile-auto-refresh: 2026-07-23T08:34:06.098Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated from local cc-switch data.
@@ -12,7 +12,7 @@ Live usage graphics are served by Tokscale; aggregate tables are generated from 
 
 <p>
   <a href="https://tokscale.ai/u/logcjj">
-    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-07-23T08%3A30%3A09.716Z" alt="logcjj live Tokscale usage graph" width="680">
+    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-07-23T08%3A34%3A06.105Z" alt="logcjj live Tokscale usage graph" width="680">
   </a>
 </p>
 
@@ -63,10 +63,10 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Tokens | Cost | Messages |
 | --- | ---: | ---: | ---: |
-| Today | 145,287,366 | $141.99 | 986 |
-| Last 7 days | 3,022,411,590 | $2,719.61 | 19,526 |
-| Last 30 days | 29,914,146,801 | $7,691.84 | 126,970 |
-| All time | 122,528,322,753 | $24,295.76 | 448,269 |
+| Today | 147,432,510 | $143.48 | 1,003 |
+| Last 7 days | 3,024,569,409 | $2,721.07 | 19,543 |
+| Last 30 days | 29,916,304,620 | $7,693.30 | 126,987 |
+| All time | 122,530,480,572 | $24,297.22 | 448,286 |
 
 <p align="center">
   <sub>Usage snapshot generated Jul 23, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
