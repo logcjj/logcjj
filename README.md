@@ -1,4 +1,4 @@
-<!-- profile-auto-refresh: 2026-07-29T05:34:04.311Z -->
+<!-- profile-auto-refresh: 2026-07-30T05:21:19.908Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated from local cc-switch data.
@@ -12,7 +12,7 @@ Live usage graphics are served by Tokscale; aggregate tables are generated from 
 
 <p>
   <a href="https://tokscale.ai/u/logcjj">
-    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-07-29T05%3A34%3A04.315Z" alt="logcjj live Tokscale usage graph" width="680">
+    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-07-30T05%3A21%3A19.914Z" alt="logcjj live Tokscale usage graph" width="680">
   </a>
 </p>
 
