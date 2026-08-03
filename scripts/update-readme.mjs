@@ -7,9 +7,24 @@ import { dirname, join } from "node:path";
 
 const args = new Set(process.argv.slice(2));
 const heartbeatOnly = args.has("--heartbeat-only");
+const opsSnapshotPath = argumentValue("--ops-snapshot");
 const timeZone = process.env.PROFILE_TIME_ZONE || "Asia/Shanghai";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readmePath = join(repoRoot, "README.md");
+
+function argumentValue(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) {
+    return null;
+  }
+
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${name} requires a value`);
+  }
+
+  return value;
+}
 
 function zonedDateParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -83,6 +98,17 @@ function formatCurrency(value) {
   })}`;
 }
 
+function formatDecimal(value) {
+  return value.toLocaleString("en-US", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+function formatPercent(value) {
+  return `${(value * 100).toFixed(2)}%`;
+}
+
 function usageRow(label, report) {
   return `| ${label} | ${formatInteger(totalTokens(report))} | ${formatCurrency(report.totalCost)} | ${formatInteger(report.totalMessages)} |`;
 }
@@ -106,6 +132,64 @@ function buildUsageSection() {
     "<p align=\"center\">",
     `  <sub>Usage snapshot generated ${displayDate()}. Aggregated from local cc-switch data; live card served by Tokscale.</sub>`,
     "</p>",
+  ].join("\n");
+}
+
+function requiredNumber(value, field) {
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid Sub2API snapshot field: ${field}`);
+  }
+
+  return value;
+}
+
+function loadOpsSnapshot(path) {
+  const payload = JSON.parse(readFileSync(path, "utf8"));
+  if (payload.code !== undefined && payload.code !== 0) {
+    throw new Error(`Sub2API snapshot request failed: ${payload.message || payload.code}`);
+  }
+
+  const snapshot = payload.data || payload;
+  if (!snapshot?.overview) {
+    throw new Error("Sub2API snapshot does not contain an overview");
+  }
+
+  return snapshot;
+}
+
+function buildOpsSection(snapshot) {
+  const overview = snapshot.overview;
+  const start = new Date(overview.start_time);
+  const end = new Date(overview.end_time);
+  const windowHours = Math.round((end - start) / (60 * 60 * 1000));
+
+  if (!Number.isFinite(windowHours) || windowHours <= 0) {
+    throw new Error("Invalid Sub2API snapshot time window");
+  }
+
+  const requests = requiredNumber(overview.request_count_total, "request_count_total");
+  const tokens = requiredNumber(overview.token_consumed, "token_consumed");
+  const sla = requiredNumber(overview.sla, "sla");
+  const averageTps = requiredNumber(overview.tps?.avg, "tps.avg");
+  const p50Latency = requiredNumber(overview.duration?.p50_ms, "duration.p50_ms");
+  const generatedAt = snapshot.generated_at ? new Date(snapshot.generated_at) : end;
+
+  if (Number.isNaN(generatedAt.getTime())) {
+    throw new Error("Invalid Sub2API snapshot generation time");
+  }
+
+  return [
+    "<!-- sub2api-ops:start -->",
+    "## API Operations",
+    "",
+    "| Window | Requests | Routed Tokens | SLA | Avg TPS | P50 Latency |",
+    "| --- | ---: | ---: | ---: | ---: | ---: |",
+    `| Last ${windowHours} hours | ${formatInteger(requests)} | ${formatInteger(tokens)} | ${formatPercent(sla)} | ${formatDecimal(averageTps)} | ${formatInteger(p50Latency)} ms |`,
+    "",
+    "<p align=\"center\">",
+    `  <sub>Sanitized Sub2API operations snapshot generated ${displayDate(generatedAt)}. No user, key, account, host, or request identifiers are published.</sub>`,
+    "</p>",
+    "<!-- sub2api-ops:end -->",
   ].join("\n");
 }
 
@@ -135,10 +219,21 @@ function updateTokscaleCacheKey(readme) {
 
 function updateUsage(readme) {
   const section = buildUsageSection();
-  const pattern = /## AI Usage\n\n\| Window \| Tokens \| Cost \| Messages \|\n\| --- \| ---: \| ---: \| ---: \|\n(?:\| .+\n)+\n<p align="center">\n  <sub>.*?<\/sub>\n<\/p>/s;
+  const pattern = /## AI Usage\n\n\| Window \| Tokens \| Cost \| Messages \|\n\| --- \| ---: \| ---: \| ---: \|\n(?:\| [^\n]+\n)+\n<p align="center">\n  <sub>[^\n]*<\/sub>\n<\/p>/;
 
   if (!pattern.test(readme)) {
     throw new Error("Could not find the AI Usage section in README.md");
+  }
+
+  return readme.replace(pattern, section);
+}
+
+function updateOps(readme, snapshot) {
+  const section = buildOpsSection(snapshot);
+  const pattern = /<!-- sub2api-ops:start -->[\s\S]*?<!-- sub2api-ops:end -->/;
+
+  if (!pattern.test(readme)) {
+    throw new Error("Could not find the Sub2API operations section in README.md");
   }
 
   return readme.replace(pattern, section);
@@ -150,6 +245,10 @@ readme = updateTokscaleCacheKey(readme);
 
 if (!heartbeatOnly) {
   readme = updateUsage(readme);
+}
+
+if (opsSnapshotPath) {
+  readme = updateOps(readme, loadOpsSnapshot(opsSnapshotPath));
 }
 
 writeFileSync(readmePath, readme);

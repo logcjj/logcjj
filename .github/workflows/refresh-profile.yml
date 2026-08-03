@@ -1,15 +1,13 @@
-name: Refresh profile README
+name: Refresh live profile card
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "24 2 * * *"
 
 permissions:
   contents: write
 
 concurrency:
-  group: refresh-profile-readme
+  group: refresh-live-profile-card
   cancel-in-progress: true
 
 jobs:
@@ -18,10 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Update hidden refresh marker
+      - name: Update live card cache key
         run: node scripts/update-readme.mjs --heartbeat-only
 
-      - name: Commit README refresh
+      - name: Commit live card refresh
         run: |
           if git diff --quiet README.md; then
             echo "README is already fresh."
@@ -31,5 +29,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "Refresh profile README"
+          git commit -m "Refresh live profile card"
           git push
