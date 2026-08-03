@@ -1,4 +1,4 @@
-<!-- profile-auto-refresh: 2026-08-03T06:56:22.266Z -->
+<!-- profile-auto-refresh: 2026-08-03T07:15:07.484Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated locally from cc-switch and Sub2API data.
@@ -12,7 +12,7 @@ Live usage graphics are served by Tokscale; aggregate tables are generated local
 
 <p>
   <a href="https://tokscale.ai/u/logcjj">
-    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-03T06%3A56%3A22.275Z" alt="logcjj live Tokscale usage graph" width="680">
+    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-03T07%3A15%3A07.492Z" alt="logcjj live Tokscale usage graph" width="680">
   </a>
 </p>
 
@@ -63,10 +63,10 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Tokens | Cost | Messages |
 | --- | ---: | ---: | ---: |
-| Today | 491,926,443 | $346.06 | 3,364 |
-| Last 7 days | 3,063,578,272 | $2,774.25 | 21,117 |
-| Last 30 days | 27,508,451,350 | $10,616.15 | 131,297 |
-| All time | 126,727,032,555 | $28,157.77 | 476,935 |
+| Today | 502,161,572 | $347.33 | 3,453 |
+| Last 7 days | 3,073,520,376 | $2,775.42 | 21,202 |
+| Last 30 days | 27,518,141,286 | $10,617.31 | 131,379 |
+| All time | 126,736,722,491 | $28,158.93 | 477,017 |
 
 <p align="center">
   <sub>Usage snapshot generated Aug 3, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
@@ -77,7 +77,7 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Requests | Routed Tokens | SLA | Avg TPS | P50 Latency |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Last 24 hours | 8,454 | 912,793,312 | 92.70% | 10,564.7 | 16,228 ms |
+| Last 24 hours | 8,439 | 924,567,184 | 93.25% | 10,701.0 | 16,215 ms |
 
 <p align="center">
   <sub>Sanitized Sub2API operations snapshot generated Aug 3, 2026. No user, key, account, host, or request identifiers are published.</sub>
