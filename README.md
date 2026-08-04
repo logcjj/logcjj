@@ -1,4 +1,4 @@
-<!-- profile-auto-refresh: 2026-08-03T07:15:07.484Z -->
+<!-- profile-auto-refresh: 2026-08-04T07:15:38.080Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated locally from cc-switch and Sub2API data.
@@ -12,7 +12,7 @@ Live usage graphics are served by Tokscale; aggregate tables are generated local
 
 <p>
   <a href="https://tokscale.ai/u/logcjj">
-    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-03T07%3A15%3A07.492Z" alt="logcjj live Tokscale usage graph" width="680">
+    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-04T07%3A15%3A38.086Z" alt="logcjj live Tokscale usage graph" width="680">
   </a>
 </p>
 
@@ -63,13 +63,13 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Tokens | Cost | Messages |
 | --- | ---: | ---: | ---: |
-| Today | 502,161,572 | $347.33 | 3,453 |
-| Last 7 days | 3,073,520,376 | $2,775.42 | 21,202 |
-| Last 30 days | 27,518,141,286 | $10,617.31 | 131,379 |
-| All time | 126,736,722,491 | $28,158.93 | 477,017 |
+| Today | 238,511,456 | $10.60 | 1,567 |
+| Last 7 days | 3,033,805,413 | $2,243.98 | 21,008 |
+| Last 30 days | 27,337,014,428 | $10,542.92 | 132,109 |
+| All time | 127,268,857,711 | $28,180.28 | 480,626 |
 
 <p align="center">
-  <sub>Usage snapshot generated Aug 3, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
+  <sub>Usage snapshot generated Aug 4, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
 </p>
 
 <!-- sub2api-ops:start -->
@@ -77,9 +77,9 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 | Window | Requests | Routed Tokens | SLA | Avg TPS | P50 Latency |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Last 24 hours | 8,439 | 924,567,184 | 93.25% | 10,701.0 | 16,215 ms |
+| Last 24 hours | 5,310 | 593,115,338 | 88.66% | 6,864.8 | 15,063 ms |
 
 <p align="center">
-  <sub>Sanitized Sub2API operations snapshot generated Aug 3, 2026. No user, key, account, host, or request identifiers are published.</sub>
+  <sub>Sanitized Sub2API operations snapshot generated Aug 4, 2026. No user, key, account, host, or request identifiers are published.</sub>
 </p>
 <!-- sub2api-ops:end -->
