@@ -1,4 +1,4 @@
-<!-- profile-auto-refresh: 2026-08-04T07:15:38.080Z -->
+<!-- profile-auto-refresh: 2026-08-05T07:11:01.267Z -->
 <!--
 Profile README inspired by compact Tokscale-first GitHub profiles.
 Live usage graphics are served by Tokscale; aggregate tables are generated locally from cc-switch and Sub2API data.
@@ -12,7 +12,7 @@ Live usage graphics are served by Tokscale; aggregate tables are generated local
 
 <p>
   <a href="https://tokscale.ai/u/logcjj">
-    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-04T07%3A15%3A38.086Z" alt="logcjj live Tokscale usage graph" width="680">
+    <img src="https://tokscale.ai/api/embed/logcjj/svg?theme=light&graph=1&color=blue&tokens=compact&cost=compact&rank=plain&cache=2026-08-05T07%3A11%3A01.268Z" alt="logcjj live Tokscale usage graph" width="680">
   </a>
 </p>
 
@@ -61,15 +61,28 @@ Building local-first AI workflows: agent orchestration, Codex automation, contex
 
 ## AI Usage
 
-| Window | Tokens | Cost | Messages |
+| Window | Tokens | Cost | Requests |
 | --- | ---: | ---: | ---: |
-| Today | 238,511,456 | $10.60 | 1,567 |
-| Last 7 days | 3,033,805,413 | $2,243.98 | 21,008 |
-| Last 30 days | 27,337,014,428 | $10,542.92 | 132,109 |
-| All time | 127,268,857,711 | $28,180.28 | 480,626 |
+| Today | 821,451,730 | $0.00 | 2,658 |
+| Last 7 days | 9,736,958,715 | $0.00 | 34,330 |
+| Last 30 days | 55,378,526,988 | $1.79 | 186,620 |
+| All time | 159,198,109,306 | $16,984.12 | 546,892 |
+
+### Top Models
+
+| App | Model | Tokens | Cost | Requests |
+| --- | --- | ---: | ---: | ---: |
+| codex | gpt-5.5 | 85,772,899,990 | $0.00 | 293,718 |
+| codex | gpt-5.4 | 66,721,394,529 | $16,862.39 | 223,809 |
+| codex | gpt-5.6-sol | 2,689,608,264 | $0.00 | 9,278 |
+| codex | gpt-5.6-luna | 2,409,501,127 | $0.00 | 8,100 |
+| codex | gpt-5.4-mini | 671,917,714 | $82.45 | 3,990 |
+| claude | qwen3.7-plus | 436,950,545 | $0.00 | 1,952 |
+| codex | unknown | 161,199,461 | $0.00 | 605 |
+| claude | gpt-5.4 | 137,359,182 | $10.43 | 1,712 |
 
 <p align="center">
-  <sub>Usage snapshot generated Aug 4, 2026. Aggregated from local cc-switch data; live card served by Tokscale.</sub>
+  <sub>Usage snapshot generated Aug 5, 2026. Model and cost data come directly from cc-switch; the live card is served by Tokscale.</sub>
 </p>
 
 <!-- sub2api-ops:start -->

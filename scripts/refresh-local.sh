@@ -37,7 +37,7 @@ docker_env_value() {
   return 1
 }
 
-for command_name in curl docker git jq node tokscale; do
+for command_name in curl docker git jq node sqlite3 tokscale; do
   require_command "$command_name"
 done
 
@@ -71,6 +71,7 @@ login_payload_path="$work_dir/login-payload.json"
 login_response="$work_dir/login.json"
 auth_header_path="$work_dir/auth-header"
 snapshot_path="$work_dir/ops-snapshot.json"
+usage_snapshot_path="$work_dir/usage-snapshot.json"
 
 printf '%s' "$login_payload" >"$login_payload_path"
 
@@ -92,10 +93,16 @@ curl --fail-with-body --silent --show-error \
 
 jq -e '.code == 0 and (.data.overview | type == "object")' "$snapshot_path" >/dev/null
 
-log "Submitting the current Tokscale snapshot."
+log "Building the cc-switch model bridge."
+"$repo_root/scripts/build-cc-switch-bridge.sh"
+
+log "Writing the cc-switch usage snapshot."
+"$repo_root/scripts/build-cc-switch-usage-snapshot.sh" "$usage_snapshot_path"
+
+log "Submitting the cc-switch Tokscale snapshot."
 tokscale_submitted=false
 for attempt in 1 2 3; do
-  if tokscale autosubmit run; then
+  if tokscale submit --client synthetic; then
     tokscale_submitted=true
     break
   fi
@@ -111,7 +118,7 @@ fi
 log "Refreshing usage and operations sections."
 readme_updated=false
 for attempt in 1 2 3; do
-  if node scripts/update-readme.mjs --ops-snapshot "$snapshot_path"; then
+  if node scripts/update-readme.mjs --ops-snapshot "$snapshot_path" --usage-snapshot "$usage_snapshot_path"; then
     readme_updated=true
     break
   fi

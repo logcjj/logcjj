@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -8,6 +7,7 @@ import { dirname, join } from "node:path";
 const args = new Set(process.argv.slice(2));
 const heartbeatOnly = args.has("--heartbeat-only");
 const opsSnapshotPath = argumentValue("--ops-snapshot");
+const usageSnapshotPath = argumentValue("--usage-snapshot");
 const timeZone = process.env.PROFILE_TIME_ZONE || "Asia/Shanghai";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readmePath = join(repoRoot, "README.md");
@@ -26,22 +26,6 @@ function argumentValue(name) {
   return value;
 }
 
-function zonedDateParts(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
-}
-
-function isoDate(date = new Date()) {
-  const { year, month, day } = zonedDateParts(date);
-  return `${year}-${month}-${day}`;
-}
-
 function displayDate(date = new Date()) {
   return new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -49,42 +33,6 @@ function displayDate(date = new Date()) {
     month: "short",
     day: "numeric",
   }).format(date);
-}
-
-function daysAgoIso(days) {
-  const now = new Date();
-  now.setUTCDate(now.getUTCDate() - days);
-  return isoDate(now);
-}
-
-function extractJson(raw) {
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error("tokscale did not return JSON output");
-  }
-
-  return JSON.parse(raw.slice(start, end + 1));
-}
-
-function runTokscale(extraArgs) {
-  const output = execFileSync("tokscale", ["--json", "--no-spinner", ...extraArgs], {
-    cwd: repoRoot,
-    encoding: "utf8",
-    maxBuffer: 30 * 1024 * 1024,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-
-  return extractJson(output);
-}
-
-function totalTokens(report) {
-  return (
-    report.totalInput +
-    report.totalOutput +
-    report.totalCacheRead +
-    report.totalCacheWrite
-  );
 }
 
 function formatInteger(value) {
@@ -109,28 +57,75 @@ function formatPercent(value) {
   return `${(value * 100).toFixed(2)}%`;
 }
 
-function usageRow(label, report) {
-  return `| ${label} | ${formatInteger(totalTokens(report))} | ${formatCurrency(report.totalCost)} | ${formatInteger(report.totalMessages)} |`;
+function markdownCell(value) {
+  return String(value).replaceAll("\\", "\\\\").replaceAll("|", "\\|").replaceAll("\n", " ");
 }
 
-function buildUsageSection() {
-  const today = isoDate();
-  const reports = [
-    ["Today", runTokscale(["--today"])],
-    ["Last 7 days", runTokscale(["--week"])],
-    ["Last 30 days", runTokscale(["--since", daysAgoIso(29), "--until", today])],
-    ["All time", runTokscale([])],
-  ];
+function usageRow(label, report) {
+  return `| ${label} | ${formatInteger(report.tokens)} | ${formatCurrency(report.cost)} | ${formatInteger(report.messages)} |`;
+}
+
+function requiredUsageNumber(value, field) {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`Invalid cc-switch usage field: ${field}`);
+  }
+
+  return value;
+}
+
+function loadUsageSnapshot(path) {
+  const snapshot = JSON.parse(readFileSync(path, "utf8"));
+  if (!Array.isArray(snapshot?.windows) || !Array.isArray(snapshot?.models)) {
+    throw new Error("cc-switch usage snapshot must contain windows and models arrays");
+  }
+
+  const windows = snapshot.windows.map((window, index) => ({
+    label: String(window.label || ""),
+    tokens: requiredUsageNumber(window.tokens, `windows[${index}].tokens`),
+    cost: requiredUsageNumber(window.cost, `windows[${index}].cost`),
+    messages: requiredUsageNumber(window.messages, `windows[${index}].messages`),
+  }));
+
+  const expectedWindows = ["Today", "Last 7 days", "Last 30 days", "All time"];
+  if (windows.length !== expectedWindows.length || windows.some(({ label }, index) => label !== expectedWindows[index])) {
+    throw new Error("cc-switch usage snapshot contains invalid windows");
+  }
+
+  const models = snapshot.models.map((model, index) => ({
+    app: String(model.app || ""),
+    model: String(model.model || ""),
+    tokens: requiredUsageNumber(model.tokens, `models[${index}].tokens`),
+    cost: requiredUsageNumber(model.cost, `models[${index}].cost`),
+    messages: requiredUsageNumber(model.messages, `models[${index}].messages`),
+  }));
+
+  if (models.length === 0 || windows.some(({ label }) => !label) || models.some(({ app, model }) => !app || !model)) {
+    throw new Error("cc-switch usage snapshot contains an empty label");
+  }
+
+  return { windows, models };
+}
+
+function buildUsageSection(snapshot) {
+  const modelRows = snapshot.models.slice(0, 8).map(({ app, model, tokens, cost, messages }) =>
+    `| ${markdownCell(app)} | ${markdownCell(model)} | ${formatInteger(tokens)} | ${formatCurrency(cost)} | ${formatInteger(messages)} |`,
+  );
 
   return [
     "## AI Usage",
     "",
-    "| Window | Tokens | Cost | Messages |",
+    "| Window | Tokens | Cost | Requests |",
     "| --- | ---: | ---: | ---: |",
-    ...reports.map(([label, report]) => usageRow(label, report)),
+    ...snapshot.windows.map((report) => usageRow(report.label, report)),
+    "",
+    "### Top Models",
+    "",
+    "| App | Model | Tokens | Cost | Requests |",
+    "| --- | --- | ---: | ---: | ---: |",
+    ...modelRows,
     "",
     "<p align=\"center\">",
-    `  <sub>Usage snapshot generated ${displayDate()}. Aggregated from local cc-switch data; live card served by Tokscale.</sub>`,
+    `  <sub>Usage snapshot generated ${displayDate()}. Model and cost data come directly from cc-switch; the live card is served by Tokscale.</sub>`,
     "</p>",
   ].join("\n");
 }
@@ -217,9 +212,9 @@ function updateTokscaleCacheKey(readme) {
   });
 }
 
-function updateUsage(readme) {
-  const section = buildUsageSection();
-  const pattern = /## AI Usage\n\n\| Window \| Tokens \| Cost \| Messages \|\n\| --- \| ---: \| ---: \| ---: \|\n(?:\| [^\n]+\n)+\n<p align="center">\n  <sub>[^\n]*<\/sub>\n<\/p>/;
+function updateUsage(readme, snapshot) {
+  const section = buildUsageSection(snapshot);
+  const pattern = /## AI Usage[\s\S]*?(?=\n\n<!-- sub2api-ops:start -->)/;
 
   if (!pattern.test(readme)) {
     throw new Error("Could not find the AI Usage section in README.md");
@@ -244,7 +239,10 @@ readme = updateHeartbeat(readme);
 readme = updateTokscaleCacheKey(readme);
 
 if (!heartbeatOnly) {
-  readme = updateUsage(readme);
+  if (!usageSnapshotPath) {
+    throw new Error("--usage-snapshot is required unless --heartbeat-only is used");
+  }
+  readme = updateUsage(readme, loadUsageSnapshot(usageSnapshotPath));
 }
 
 if (opsSnapshotPath) {
