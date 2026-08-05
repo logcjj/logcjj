@@ -53,7 +53,8 @@ CC_SWITCH_DB="$source_db" "$repo_root/scripts/build-cc-switch-usage-snapshot.sh"
 [[ "$(sqlite3 "$bridge_db" 'SELECT COUNT(DISTINCT model) FROM messages;')" -eq 3 ]]
 [[ "$(sqlite3 "$bridge_db" 'SELECT SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens) FROM messages;')" -eq 42 ]]
 [[ "$(sqlite3 "$bridge_db" "SELECT printf('%.2f', SUM(CASE WHEN cost > 0.000000001 THEN cost ELSE 0 END)) FROM messages;")" == '2.00' ]]
-[[ "$(sqlite3 "$bridge_db" "SELECT COUNT(*) FROM messages WHERE model = 'cc-switch-rollup' OR model NOT LIKE 'model: % (cc-switch)';")" -eq 0 ]]
+[[ "$(sqlite3 "$bridge_db" "SELECT COUNT(*) FROM messages WHERE model = 'cc-switch-rollup' OR model LIKE 'model: % (cc-switch)';")" -eq 0 ]]
+[[ "$(sqlite3 "$bridge_db" "SELECT COUNT(*) FROM messages WHERE model = 'gpt-5.6-sol';")" -eq 2 ]]
 [[ "$(jq -r '.windows[] | select(.label == "All time") | .tokens' "$test_root/usage.json")" -eq 42 ]]
 [[ "$(jq -r '.windows[] | select(.label == "All time") | .cost' "$test_root/usage.json")" == '2' ]]
 [[ "$(jq -r '.models | length' "$test_root/usage.json")" -eq 3 ]]
@@ -63,7 +64,7 @@ sqlite3 "$source_db" "UPDATE usage_daily_rollups SET model = 'gpt-5.6-sol-update
 CC_SWITCH_DB="$source_db" TOKSCALE_BRIDGE_DB="$bridge_db" "$repo_root/scripts/build-cc-switch-bridge.sh" >/dev/null
 
 [[ -f "${bridge_db}.previous" ]]
-[[ "$(sqlite3 "${bridge_db}.previous" "SELECT COUNT(*) FROM messages WHERE model = 'model: gpt-5.6-sol (cc-switch)';")" -eq 2 ]]
-[[ "$(sqlite3 "$bridge_db" "SELECT COUNT(*) FROM messages WHERE model = 'model: gpt-5.6-sol-updated (cc-switch)';")" -eq 2 ]]
+[[ "$(sqlite3 "${bridge_db}.previous" "SELECT COUNT(*) FROM messages WHERE model = 'gpt-5.6-sol';")" -eq 2 ]]
+[[ "$(sqlite3 "$bridge_db" "SELECT COUNT(*) FROM messages WHERE model = 'gpt-5.6-sol-updated';")" -eq 2 ]]
 
 printf 'cc-switch bridge tests passed\n'

@@ -95,7 +95,7 @@ WITH RECURSIVE expanded(
 INSERT INTO messages
 SELECT
   'cc-rollup-' || date || '-' || hex(app_type) || '-' || hex(provider_id) || '-' || hex(model) || '-' || n,
-  'model: ' || COALESCE(NULLIF(model, ''), 'unknown') || ' (cc-switch)',
+  COALESCE(NULLIF(model, ''), 'unknown'),
   (input_tokens / request_count) + CASE WHEN n <= (input_tokens % request_count) THEN 1 ELSE 0 END,
   (output_tokens / request_count) + CASE WHEN n <= (output_tokens % request_count) THEN 1 ELSE 0 END,
   (cache_read_tokens / request_count) + CASE WHEN n <= (cache_read_tokens % request_count) THEN 1 ELSE 0 END,
@@ -116,7 +116,7 @@ WITH cutoff AS (
 INSERT INTO messages
 SELECT
   'cc-log-' || request_id,
-  'model: ' || COALESCE(NULLIF(model, ''), 'unknown') || ' (cc-switch)',
+  COALESCE(NULLIF(model, ''), 'unknown'),
   input_tokens,
   output_tokens,
   cache_read_tokens,
@@ -173,7 +173,7 @@ if [[ "$source_totals" != "$bridge_totals" ]]; then
   exit 1
 fi
 
-if sqlite3 "$temp_db" "SELECT COUNT(*) FROM messages WHERE model = 'cc-switch-rollup' OR model NOT LIKE 'model: % (cc-switch)';" | grep -qv '^0$'; then
+if sqlite3 "$temp_db" "SELECT COUNT(*) FROM messages WHERE model = 'cc-switch-rollup' OR model LIKE 'model: % (cc-switch)';" | grep -qv '^0$'; then
   printf 'Bridge contains an invalid model label.\n' >&2
   exit 1
 fi
