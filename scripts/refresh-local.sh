@@ -37,7 +37,7 @@ docker_env_value() {
   return 1
 }
 
-for command_name in curl docker git jq node sqlite3 tokscale; do
+for command_name in curl docker git jq node npx sqlite3; do
   require_command "$command_name"
 done
 
@@ -102,7 +102,7 @@ log "Writing the cc-switch usage snapshot."
 log "Submitting the cc-switch Tokscale snapshot."
 tokscale_submitted=false
 for attempt in 1 2 3; do
-  if tokscale submit --client synthetic; then
+  if npx --yes tokscale@4.5.1 submit --client synthetic; then
     tokscale_submitted=true
     break
   fi
