@@ -39,7 +39,7 @@ CREATE TABLE proxy_request_logs (
 );
 INSERT INTO usage_daily_rollups VALUES
   ('2026-08-01', 'codex', 'provider-a', 'gpt-5.6-sol', 2, 2, 5, 3, 4, 2, '1.25', 10),
-  ('2026-08-01', 'claude', 'provider-b', 'qwen3.7-plus', 1, 1, 7, 1, 0, 0, '0', 10);
+  ('2026-08-01', 'claude', 'provider-b', 'Claude-Haiku-4-5-20251001', 1, 1, 7, 1, 0, 0, '0', 10);
 INSERT INTO proxy_request_logs VALUES
   ('new-success', 'codex', 'gpt-5.6-luna', 11, 2, 3, 4, '0.75', 200, 'session-a', strftime('%s', '2026-08-02 12:00:00')),
   ('old-success', 'codex', 'gpt-5.5', 100, 0, 0, 0, '10', 200, 'session-b', strftime('%s', '2026-08-01 13:00:00')),
@@ -48,6 +48,7 @@ SQL
 
 CC_SWITCH_DB="$source_db" TOKSCALE_BRIDGE_DB="$bridge_db" "$repo_root/scripts/build-cc-switch-bridge.sh"
 CC_SWITCH_DB="$source_db" "$repo_root/scripts/build-cc-switch-usage-snapshot.sh" "$test_root/usage.json" >/dev/null
+CC_SWITCH_DB="$source_db" "$repo_root/scripts/build-cc-switch-tokscale-snapshot.sh" "$test_root/tokscale.json" >/dev/null
 
 [[ "$(sqlite3 "$bridge_db" 'SELECT COUNT(*) FROM messages;')" -eq 4 ]]
 [[ "$(sqlite3 "$bridge_db" 'SELECT COUNT(DISTINCT model) FROM messages;')" -eq 3 ]]
@@ -59,6 +60,13 @@ CC_SWITCH_DB="$source_db" "$repo_root/scripts/build-cc-switch-usage-snapshot.sh"
 [[ "$(jq -r '.windows[] | select(.label == "All time") | .cost' "$test_root/usage.json")" == '2' ]]
 [[ "$(jq -r '.models | length' "$test_root/usage.json")" -eq 3 ]]
 [[ "$(jq -r '.models[0].model' "$test_root/usage.json")" == 'gpt-5.6-luna' ]]
+[[ "$(jq -r '.summary.totalTokens' "$test_root/tokscale.json")" -eq 42 ]]
+[[ "$(jq -r '.summary.totalCost' "$test_root/tokscale.json")" == '2' ]]
+[[ "$(jq -r '.summary.clients | join(",")' "$test_root/tokscale.json")" == 'claude,codex' ]]
+[[ "$(jq -r '.summary.models | index("claude-haiku-4-5") != null' "$test_root/tokscale.json")" == 'true' ]]
+[[ "$(jq -r '.summary.models | index("claude-haiku-4-5-20251001") == null' "$test_root/tokscale.json")" == 'true' ]]
+[[ "$(jq -r '[.contributions[].clients[] | select(.client == "codex" and .modelId == "gpt-5.6-sol")] | length' "$test_root/tokscale.json")" -eq 1 ]]
+[[ "$(jq -r '[.contributions[].clients[] | select(.client == "synthetic")] | length' "$test_root/tokscale.json")" -eq 0 ]]
 
 sqlite3 "$source_db" "UPDATE usage_daily_rollups SET model = 'gpt-5.6-sol-updated' WHERE model = 'gpt-5.6-sol';"
 CC_SWITCH_DB="$source_db" TOKSCALE_BRIDGE_DB="$bridge_db" "$repo_root/scripts/build-cc-switch-bridge.sh" >/dev/null

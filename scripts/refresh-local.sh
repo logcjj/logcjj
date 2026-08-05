@@ -37,7 +37,7 @@ docker_env_value() {
   return 1
 }
 
-for command_name in curl docker git jq node npx sqlite3; do
+for command_name in curl docker git jq node sqlite3; do
   require_command "$command_name"
 done
 
@@ -72,6 +72,7 @@ login_response="$work_dir/login.json"
 auth_header_path="$work_dir/auth-header"
 snapshot_path="$work_dir/ops-snapshot.json"
 usage_snapshot_path="$work_dir/usage-snapshot.json"
+tokscale_snapshot_path="$work_dir/tokscale-snapshot.json"
 
 printf '%s' "$login_payload" >"$login_payload_path"
 
@@ -99,10 +100,13 @@ log "Building the cc-switch model bridge."
 log "Writing the cc-switch usage snapshot."
 "$repo_root/scripts/build-cc-switch-usage-snapshot.sh" "$usage_snapshot_path"
 
+log "Writing the cc-switch Tokscale provider snapshot."
+"$repo_root/scripts/build-cc-switch-tokscale-snapshot.sh" "$tokscale_snapshot_path"
+
 log "Submitting the cc-switch Tokscale snapshot."
 tokscale_submitted=false
 for attempt in 1 2 3; do
-  if npx --yes tokscale@4.5.1 submit --client synthetic; then
+  if node "$repo_root/scripts/submit-cc-switch-tokscale.mjs" "$tokscale_snapshot_path"; then
     tokscale_submitted=true
     break
   fi
