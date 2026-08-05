@@ -62,37 +62,12 @@ fi
 log "Updating the local checkout."
 git pull --ff-only origin main
 
-container_env="$(docker inspect "$sub2api_container" --format '{{range .Config.Env}}{{println .}}{{end}}')"
-admin_email="${SUB2API_ADMIN_EMAIL:-$(docker_env_value ADMIN_EMAIL <<<"$container_env")}"
-admin_password="${SUB2API_ADMIN_PASSWORD:-$(docker_env_value ADMIN_PASSWORD <<<"$container_env")}"
-
-login_payload="$(jq -cn --arg email "$admin_email" --arg password "$admin_password" '{email:$email,password:$password}')"
 login_payload_path="$work_dir/login-payload.json"
 login_response="$work_dir/login.json"
 auth_header_path="$work_dir/auth-header"
 snapshot_path="$work_dir/ops-snapshot.json"
 usage_snapshot_path="$work_dir/usage-snapshot.json"
 tokscale_snapshot_path="$work_dir/tokscale-snapshot.json"
-
-printf '%s' "$login_payload" >"$login_payload_path"
-
-log "Reading the sanitized 24-hour Sub2API aggregate."
-curl --fail-with-body --silent --show-error \
-  --connect-timeout 5 --max-time 30 \
-  -H 'Content-Type: application/json' \
-  --data-binary @"$login_payload_path" \
-  "$sub2api_url/api/v1/auth/login" >"$login_response"
-
-access_token="$(jq -er '.data.access_token' "$login_response")"
-printf 'Authorization: Bearer %s\n' "$access_token" >"$auth_header_path"
-unset access_token admin_email admin_password container_env login_payload
-
-curl --fail-with-body --silent --show-error \
-  --connect-timeout 5 --max-time 30 \
-  -H @"$auth_header_path" \
-  "$sub2api_url/api/v1/admin/ops/dashboard/snapshot-v2?time_range=24h" >"$snapshot_path"
-
-jq -e '.code == 0 and (.data.overview | type == "object")' "$snapshot_path" >/dev/null
 
 log "Building the cc-switch model bridge."
 "$repo_root/scripts/build-cc-switch-bridge.sh"
@@ -118,6 +93,32 @@ done
 if [[ "$tokscale_submitted" != true ]]; then
   log "Tokscale submission remains stale; continuing with local aggregates."
 fi
+
+container_env="$(docker inspect "$sub2api_container" --format '{{range .Config.Env}}{{println .}}{{end}}')"
+admin_email="${SUB2API_ADMIN_EMAIL:-$(docker_env_value ADMIN_EMAIL <<<"$container_env")}"
+admin_password="${SUB2API_ADMIN_PASSWORD:-$(docker_env_value ADMIN_PASSWORD <<<"$container_env")}"
+
+login_payload="$(jq -cn --arg email "$admin_email" --arg password "$admin_password" '{email:$email,password:$password}')"
+
+printf '%s' "$login_payload" >"$login_payload_path"
+
+log "Reading the sanitized 24-hour Sub2API aggregate."
+curl --fail-with-body --silent --show-error \
+  --connect-timeout 5 --max-time 30 \
+  -H 'Content-Type: application/json' \
+  --data-binary @"$login_payload_path" \
+  "$sub2api_url/api/v1/auth/login" >"$login_response"
+
+access_token="$(jq -er '.data.access_token' "$login_response")"
+printf 'Authorization: Bearer %s\n' "$access_token" >"$auth_header_path"
+unset access_token admin_email admin_password container_env login_payload
+
+curl --fail-with-body --silent --show-error \
+  --connect-timeout 5 --max-time 30 \
+  -H @"$auth_header_path" \
+  "$sub2api_url/api/v1/admin/ops/dashboard/snapshot-v2?time_range=24h" >"$snapshot_path"
+
+jq -e '.code == 0 and (.data.overview | type == "object")' "$snapshot_path" >/dev/null
 
 log "Refreshing usage and operations sections."
 readme_updated=false
